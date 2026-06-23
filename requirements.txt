@@ -1,0 +1,10 @@
+# Cambridge C1 Trainer — Requirements
+# Python >= 3.9 required.
+
+flask>=3.0.0
+python-dotenv>=1.0.0
+
+# Optional (for future enhancements):
+# anthropic>=0.25.0     # Official SDK (currently using urllib directly)
+# rich>=13.0.0          # Better terminal formatting
+# click>=8.0.0          # CLI interface

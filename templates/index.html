@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C1 Advanced Trainer</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">&#127919;</span>
+        <span class="logo-text">C1 Advanced Trainer</span>
+      </div>
+      <div class="header-right">
+        <nav>
+          <button class="tab-btn active" data-tab="vocabulary">&#128218; Vocab</button>
+          <button class="tab-btn" data-tab="grammar">&#129504; Grammar</button>
+          <button class="tab-btn" data-tab="uoe">&#128221; UoE</button>
+          <button class="tab-btn" data-tab="writing">&#9997; Writing</button>
+          <button class="tab-btn" data-tab="dashboard">&#128202; Stats</button>
+        </nav>
+        <button class="dark-toggle" id="dark-toggle" title="Toggle dark mode">&#127769;</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ═══════════════ VOCABULARY ═══════════════ -->
+    <section id="tab-vocabulary" class="tab-section active">
+      <div class="section-heading">
+        <h2>&#128218; Vocabulary Flashcards</h2>
+        <p class="subtitle">Spaced repetition powered by SM-2 &mdash; <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> to rate</p>
+      </div>
+
+      <div class="flashcard-wrapper">
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+          <div class="card-inner">
+            <div class="card-front">
+              <span class="card-badge">Word</span>
+              <p class="card-word" id="card-word">Loading...</p>
+              <p class="card-example" id="card-example"></p>
+            </div>
+            <div class="card-back">
+              <span class="card-badge">Definition</span>
+              <p class="card-definition" id="card-definition"></p>
+              <div class="card-meta">
+                <span><strong>Synonyms:</strong> <span id="card-synonyms"></span></span>
+                <span><strong>Register:</strong> <span id="card-register"></span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="flip-hint" id="flip-hint">Click the card to reveal</p>
+      </div>
+
+      <div class="rating-group" id="rating-group">
+        <button class="rating-btn again" data-quality="0"><kbd>1</kbd> Again</button>
+        <button class="rating-btn hard"  data-quality="3"><kbd>2</kbd> Hard</button>
+        <button class="rating-btn good"  data-quality="4"><kbd>3</kbd> Good</button>
+        <button class="rating-btn easy"  data-quality="5"><kbd>4</kbd> Easy</button>
+      </div>
+
+      <div class="session-progress" id="session-progress">
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <span class="progress-label" id="progress-label">Ready</span>
+      </div>
+
+      <div class="empty-state" id="vocab-empty">
+        <p>&#127881; All caught up! No cards due today.</p>
+        <button class="btn-secondary" onclick="loadNextCard()">Check again</button>
+      </div>
+
+      <details class="collapsible">
+        <summary>&#43; Add a new word</summary>
+        <div class="add-card-form">
+          <input type="text" id="v-word" placeholder="Word *" autocomplete="off">
+          <input type="text" id="v-def" placeholder="Definition" autocomplete="off">
+          <input type="text" id="v-example" placeholder="Example sentence" autocomplete="off">
+          <input type="text" id="v-synonyms" placeholder="Synonyms (comma separated)" autocomplete="off">
+          <select id="v-register">
+            <option value="neutral">Register: neutral</option>
+            <option value="formal">Formal</option>
+            <option value="informal">Informal</option>
+          </select>
+          <button class="btn-primary" onclick="addVocabCard()">Add Card</button>
+          <span class="add-status" id="add-status"></span>
+        </div>
+      </details>
+    </section>
+
+    <!-- ═══════════════ GRAMMAR ═══════════════ -->
+    <section id="tab-grammar" class="tab-section">
+      <div class="section-heading">
+        <h2>&#129504; Grammar Exercises</h2>
+        <p class="subtitle">B2 &rarr; C1 structures &mdash; AI-generated</p>
+      </div>
+
+      <details class="collapsible" id="grammar-cheatsheet">
+        <summary>&#128161; Structure reference</summary>
+        <div id="cheatsheet-body"></div>
+      </details>
+
+      <div id="grammar-start">
+        <div class="start-card">
+          <p>Generate a grammar exercise tailored to your weakest structures.</p>
+          <button class="btn-primary" onclick="generateGrammar()">&#9889; Generate Exercise</button>
+        </div>
+      </div>
+
+      <div class="exercise-card hidden" id="grammar-exercise">
+        <div class="exercise-header">
+          <span class="structure-badge" id="grammar-structure">inversion</span>
+        </div>
+        <p class="exercise-instruction" id="grammar-instruction"></p>
+        <p class="exercise-question" id="grammar-question"></p>
+        <div class="answer-row">
+          <input type="text" id="grammar-answer" placeholder="Type your answer..." autocomplete="off">
+          <button class="btn-primary" onclick="checkGrammar()">Check</button>
+        </div>
+        <div class="feedback-box hidden" id="grammar-feedback">
+          <p class="feedback-result" id="grammar-result"></p>
+          <p class="feedback-explanation" id="grammar-explanation"></p>
+          <p class="feedback-tip" id="grammar-tip"></p>
+          <button class="btn-secondary" onclick="generateGrammar()">Next &rarr;</button>
+        </div>
+      </div>
+
+      <div class="loading-spinner hidden" id="grammar-loading">
+        <div class="spinner"></div>
+        <p>Generating exercise with AI...</p>
+      </div>
+    </section>
+
+    <!-- ═══════════════ USE OF ENGLISH ═══════════════ -->
+    <section id="tab-uoe" class="tab-section">
+      <div class="section-heading">
+        <h2>&#128221; Use of English</h2>
+        <p class="subtitle">CAE Paper 1 &mdash; Parts 1&ndash;4</p>
+      </div>
+
+      <div id="uoe-start">
+        <div class="start-card">
+          <p>Choose a part to practise:</p>
+          <div class="part-selector">
+            <button class="part-btn" data-part="1">Part 1<br><small>Multiple-choice cloze</small></button>
+            <button class="part-btn" data-part="2">Part 2<br><small>Open cloze</small></button>
+            <button class="part-btn" data-part="3">Part 3<br><small>Word formation</small></button>
+            <button class="part-btn" data-part="4">Part 4<br><small>Key word transformations</small></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading-spinner hidden" id="uoe-loading">
+        <div class="spinner"></div>
+        <p>Generating exercise with AI...</p>
+      </div>
+
+      <div class="exercise-card hidden" id="uoe-exercise">
+        <div class="exercise-header">
+          <span class="structure-badge" id="uoe-part-badge">Part 4</span>
+        </div>
+        <div id="uoe-body"></div>
+        <button class="btn-primary" id="uoe-check-btn" onclick="checkUoE()">Check Answers</button>
+        <div class="feedback-box hidden" id="uoe-feedback"></div>
+        <button class="btn-secondary hidden" id="uoe-next-btn" onclick="showUoEStart()">New Exercise &rarr;</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════ WRITING ═══════════════ -->
+    <section id="tab-writing" class="tab-section">
+      <div class="section-heading">
+        <h2>&#9997; Writing Practice</h2>
+        <p class="subtitle">CAE Paper 2 &mdash; AI assessment with official criteria</p>
+      </div>
+
+      <div id="writing-task-select">
+        <div class="start-card">
+          <p>Select a task type:</p>
+          <div id="writing-task-list"></div>
+        </div>
+      </div>
+
+      <div class="exercise-card hidden" id="writing-editor">
+        <div class="exercise-header">
+          <span class="structure-badge" id="writing-task-name">Essay</span>
+        </div>
+        <p class="exercise-instruction" id="writing-prompt-text"></p>
+        <textarea id="writing-text" placeholder="Write your response here (220-260 words). Press Tab then Enter when done..." rows="12"></textarea>
+        <div class="word-count"><span id="writing-wordcount">0</span> words</div>
+        <button class="btn-primary" id="writing-submit-btn" onclick="submitWriting()">&#128228; Submit for Assessment</button>
+      </div>
+
+      <div class="loading-spinner hidden" id="writing-loading">
+        <div class="spinner"></div>
+        <p>Assessing your writing with AI...</p>
+      </div>
+
+      <div class="exercise-card hidden" id="writing-feedback">
+        <div class="exercise-header">
+          <span class="structure-badge" id="writing-grade-badge">Grade: --</span>
+          <span style="margin-left:12px;font-size:14px;color:var(--slate-500);" id="writing-score">0/20</span>
+        </div>
+        <div id="writing-scores"></div>
+        <div id="writing-strengths"></div>
+        <div id="writing-improvements"></div>
+        <div id="writing-corrections"></div>
+        <div id="writing-vocab-upgrades"></div>
+        <div id="writing-model-opening"></div>
+      </div>
+
+      <details class="collapsible" style="margin-top:24px">
+        <summary>&#128196; Submission history</summary>
+        <div id="writing-history-list"></div>
+      </details>
+    </section>
+
+    <!-- ═══════════════ DASHBOARD ═══════════════ -->
+    <section id="tab-dashboard" class="tab-section">
+      <div class="section-heading">
+        <h2>&#128202; Dashboard</h2>
+        <p class="subtitle">Your progress at a glance</p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="stat-card" id="stat-streak">
+          <div class="stat-icon">&#128197;</div>
+          <div class="stat-value">0</div>
+          <div class="stat-label">Day Streak</div>
+        </div>
+        <div class="stat-card" id="stat-total-cards">
+          <div class="stat-icon">&#128218;</div>
+          <div class="stat-value">0</div>
+          <div class="stat-label">Vocabulary Cards</div>
+        </div>
+        <div class="stat-card" id="stat-mature">
+          <div class="stat-icon">&#127793;</div>
+          <div class="stat-value">0%</div>
+          <div class="stat-label">Mature</div>
+        </div>
+        <div class="stat-card" id="stat-due">
+          <div class="stat-icon">&#9200;</div>
+          <div class="stat-value">0</div>
+          <div class="stat-label">Due Today</div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h3>&#128200; Weekly Activity</h3>
+        <div id="weekly-chart" class="weekly-chart"></div>
+        <div id="weekly-stats"></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h3>&#9888;&#65039; Weak Grammar Structures</h3>
+        <div id="weak-grammar-list"></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h3>&#127919; Exam Readiness</h3>
+        <div id="exam-readiness"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

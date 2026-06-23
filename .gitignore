@@ -1,0 +1,21 @@
+# Database
+data/trainer.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Test artifacts
+stdout_test.txt
+stderr_test.txt
