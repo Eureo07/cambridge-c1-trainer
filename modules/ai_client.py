@@ -9,7 +9,7 @@ import urllib.request
 import urllib.error
 
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "mistralai/mistral-7b-instruct"
+MODEL = "liquid/lfm-2.5-1.2b-instruct:free"
 
 
 def call(prompt: str, system: str = None, max_tokens: int = 1000) -> str:
