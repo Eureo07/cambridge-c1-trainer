@@ -74,6 +74,41 @@ def api_vocab_review():
     return jsonify({'success': True})
 
 
+@app.route('/api/vocabulary/quiz')
+def api_vocab_quiz():
+    due = vocabulary.load_due_cards(limit=20)
+    new = vocabulary.load_new_cards(limit=5)
+    combined = due + new
+
+    if not combined:
+        return jsonify({'card': None, 'remaining': 0, 'total': 0})
+
+    card = combined[0]
+    remaining = len(combined) - 1
+
+    db = get_db()
+    distractors = db.execute(
+        "SELECT definition FROM vocabulary WHERE id != ? ORDER BY RANDOM() LIMIT 3",
+        (card['id'],)
+    ).fetchall()
+
+    options = [card['definition']]
+    options.extend(r['definition'] for r in distractors)
+    random.shuffle(options)
+
+    return jsonify({
+        'card': {
+            'id': card['id'],
+            'word': card['word'],
+            'example': card['example'],
+        },
+        'correct_definition': card['definition'],
+        'options': options,
+        'remaining': remaining,
+        'total': len(combined),
+    })
+
+
 # ─── Vocabulary Add ───────────────────────────────────────────────────────────
 
 @app.route('/api/vocabulary/add', methods=['POST'])

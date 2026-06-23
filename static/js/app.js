@@ -13,6 +13,12 @@
     reviewedCards: 0,
     remainingCards: 0,
     isFlipped: false,
+    vocabMode: 'flashcard',
+    quizCorrect: 0,
+    quizTotal: 0,
+    quizStreak: 0,
+    quizBestStreak: 0,
+    quizAnswered: false,
     grammarExercise: null,
     grammarChecked: false,
     uoeExercise: null,
@@ -173,10 +179,130 @@
     if (!['1', '2', '3', '4'].includes(e.key)) return;
     const vocab = $('tab-vocabulary');
     if (!vocab || !vocab.classList.contains('active')) return;
-    if (!state.isFlipped) return;
-    const map = { '1': 0, '2': 3, '3': 4, '4': 5 };
-    rateCard(map[e.key]);
+    if (state.vocabMode === 'flashcard' && state.isFlipped) {
+      const map = { '1': 0, '2': 3, '3': 4, '4': 5 };
+      rateCard(map[e.key]);
+    }
   });
+
+  // ─── Quiz Mode ────────────────────────────────────────────────────────────
+
+  window.switchVocabMode = function(mode) {
+    state.vocabMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    const flashcardEl = $('vocab-flashcard-mode');
+    const quizEl = $('vocab-quiz-mode');
+    if (flashcardEl) flashcardEl.classList.toggle('hidden', mode !== 'flashcard');
+    if (quizEl) quizEl.classList.toggle('hidden', mode !== 'quiz');
+    if (mode === 'flashcard') {
+      loadNextCard();
+    } else {
+      loadQuizQuestion();
+    }
+  };
+
+  async function loadQuizQuestion() {
+    state.quizAnswered = false;
+    const resultEl = $('quiz-result');
+    if (resultEl) { resultEl.classList.add('hidden'); resultEl.classList.remove('correct', 'wrong'); }
+
+    const flashcardWrapper = document.querySelector('.flashcard-wrapper');
+    if (flashcardWrapper) flashcardWrapper.style.display = 'none';
+
+    const vocabEmpty = $('vocab-empty');
+    if (vocabEmpty) vocabEmpty.classList.remove('visible');
+
+    const data = await api('/api/vocabulary/quiz');
+    if (!data.card) {
+      if (vocabEmpty) vocabEmpty.classList.add('visible');
+      if (quizEl) {
+        const qw = $('quiz-word');
+        if (qw) qw.textContent = '';
+      }
+      return;
+    }
+
+    state.currentCard = data.card;
+    state.totalCards = data.total || 1;
+    state.remainingCards = data.remaining || 0;
+    state.quizCorrect = state.quizCorrect || 0;
+    state.quizTotal = state.quizTotal || 0;
+
+    const qw = $('quiz-word');
+    const qe = $('quiz-example');
+    const qo = $('quiz-options');
+    if (qw) qw.textContent = data.card.word;
+    if (qe) qe.textContent = data.card.example || '';
+    if (qo) {
+      qo.innerHTML = '';
+      data.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.textContent = opt;
+        btn.dataset.definition = opt;
+        btn.addEventListener('click', () => handleQuizAnswer(btn, data.correct_definition));
+        qo.appendChild(btn);
+      });
+    }
+
+    updateProgress();
+  }
+
+  async function handleQuizAnswer(selectedBtn, correctDefinition) {
+    if (state.quizAnswered) return;
+    state.quizAnswered = true;
+
+    const isCorrect = selectedBtn.dataset.definition === correctDefinition;
+    const allOptions = document.querySelectorAll('.quiz-option');
+
+    allOptions.forEach(btn => {
+      btn.disabled = true;
+      if (btn.dataset.definition === correctDefinition) btn.classList.add('correct');
+      if (btn === selectedBtn && !isCorrect) btn.classList.add('wrong');
+    });
+
+    // Auto-quality based on answer
+    const quality = isCorrect ? 4 : 0;
+    await api('/api/vocabulary/review', {
+      method: 'POST',
+      body: JSON.stringify({ card_id: state.currentCard.id, quality }),
+    });
+
+    state.quizTotal++;
+    if (isCorrect) {
+      state.quizCorrect++;
+      state.quizStreak++;
+      if (state.quizStreak > state.quizBestStreak) state.quizBestStreak = state.quizStreak;
+    } else {
+      state.quizStreak = 0;
+    }
+
+    const resultEl = $('quiz-result');
+    const resultIcon = $('quiz-result-icon');
+    const resultText = $('quiz-result-text');
+    if (resultEl) {
+      resultEl.classList.remove('hidden', 'correct', 'wrong');
+      resultEl.classList.add(isCorrect ? 'correct' : 'wrong');
+    }
+    if (resultIcon) resultIcon.textContent = isCorrect ? '\u2705' : '\u274c';
+    if (resultText) resultText.textContent = isCorrect ? 'Correct!' : `Incorrect. Answer: ${correctDefinition}`;
+
+    // Scoreboard
+    const correctEl = $('quiz-correct');
+    const totalEl = $('quiz-total');
+    const streakEl = $('quiz-streak');
+    if (correctEl) correctEl.textContent = state.quizCorrect;
+    if (totalEl) totalEl.textContent = state.quizTotal;
+    if (streakEl) streakEl.textContent = state.quizStreak > 1 ? `\uD83D\uDD25 ${state.quizStreak} streak!` : '';
+
+    state.remainingCards = Math.max(0, state.remainingCards);
+    updateProgress();
+
+    // Load next after delay
+    setTimeout(() => {
+      if (state.vocabMode === 'quiz') loadQuizQuestion();
+    }, 1200);
+  }
 
   // ─── Vocab Add ────────────────────────────────────────────────────────────
 

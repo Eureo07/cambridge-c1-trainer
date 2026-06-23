@@ -31,36 +31,60 @@
     <!-- ═══════════════ VOCABULARY ═══════════════ -->
     <section id="tab-vocabulary" class="tab-section active">
       <div class="section-heading">
-        <h2>&#128218; Vocabulary Flashcards</h2>
-        <p class="subtitle">Spaced repetition powered by SM-2 &mdash; <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> to rate</p>
+        <h2>&#128218; Vocabulary</h2>
+        <div class="mode-toggle">
+          <button class="mode-btn active" data-mode="flashcard" onclick="switchVocabMode('flashcard')">&#128196; Flashcards</button>
+          <button class="mode-btn" data-mode="quiz" onclick="switchVocabMode('quiz')">&#128221; Quiz</button>
+        </div>
       </div>
 
-      <div class="flashcard-wrapper">
-        <div class="flashcard" id="flashcard" onclick="flipCard()">
-          <div class="card-inner">
-            <div class="card-front">
-              <span class="card-badge">Word</span>
-              <p class="card-word" id="card-word">Loading...</p>
-              <p class="card-example" id="card-example"></p>
-            </div>
-            <div class="card-back">
-              <span class="card-badge">Definition</span>
-              <p class="card-definition" id="card-definition"></p>
-              <div class="card-meta">
-                <span><strong>Synonyms:</strong> <span id="card-synonyms"></span></span>
-                <span><strong>Register:</strong> <span id="card-register"></span></span>
+      <!-- Flashcard Mode -->
+      <div id="vocab-flashcard-mode">
+        <div class="flashcard-wrapper">
+          <div class="flashcard" id="flashcard" onclick="flipCard()">
+            <div class="card-inner">
+              <div class="card-front">
+                <span class="card-badge">Word</span>
+                <p class="card-word" id="card-word">Loading...</p>
+                <p class="card-example" id="card-example"></p>
+              </div>
+              <div class="card-back">
+                <span class="card-badge">Definition</span>
+                <p class="card-definition" id="card-definition"></p>
+                <div class="card-meta">
+                  <span><strong>Synonyms:</strong> <span id="card-synonyms"></span></span>
+                  <span><strong>Register:</strong> <span id="card-register"></span></span>
+                </div>
               </div>
             </div>
           </div>
+          <p class="flip-hint" id="flip-hint">Click the card to reveal</p>
         </div>
-        <p class="flip-hint" id="flip-hint">Click the card to reveal</p>
+
+        <div class="rating-group" id="rating-group">
+          <button class="rating-btn again" data-quality="0"><kbd>1</kbd> Again</button>
+          <button class="rating-btn hard"  data-quality="3"><kbd>2</kbd> Hard</button>
+          <button class="rating-btn good"  data-quality="4"><kbd>3</kbd> Good</button>
+          <button class="rating-btn easy"  data-quality="5"><kbd>4</kbd> Easy</button>
+        </div>
       </div>
 
-      <div class="rating-group" id="rating-group">
-        <button class="rating-btn again" data-quality="0"><kbd>1</kbd> Again</button>
-        <button class="rating-btn hard"  data-quality="3"><kbd>2</kbd> Hard</button>
-        <button class="rating-btn good"  data-quality="4"><kbd>3</kbd> Good</button>
-        <button class="rating-btn easy"  data-quality="5"><kbd>4</kbd> Easy</button>
+      <!-- Quiz Mode -->
+      <div id="vocab-quiz-mode" class="hidden">
+        <div class="quiz-card">
+          <p class="quiz-label">What is the meaning of this word?</p>
+          <p class="quiz-word" id="quiz-word">Loading...</p>
+          <p class="quiz-example" id="quiz-example"></p>
+          <div class="quiz-options" id="quiz-options"></div>
+          <div class="quiz-result hidden" id="quiz-result">
+            <span class="quiz-result-icon" id="quiz-result-icon"></span>
+            <span class="quiz-result-text" id="quiz-result-text"></span>
+          </div>
+        </div>
+        <div class="quiz-scoreboard" id="quiz-scoreboard">
+          <span>Score: <strong id="quiz-correct">0</strong>/<strong id="quiz-total">0</strong></span>
+          <span class="quiz-streak" id="quiz-streak"></span>
+        </div>
       </div>
 
       <div class="session-progress" id="session-progress">
